@@ -481,13 +481,56 @@ html.faded #stage{opacity:0}
   function items(kind) {
     var out = [];
     // The apps' cards follow the Apps row, so arranging moves the row, not its cards.
-    if (kind === 'rec' && state.arranging) return out;
+    if (kind === 'rec') return state.arranging ? out : recCards();
     (data.order[kind] || []).forEach(function (id) {
       var it = byId(kind, id);
       if (it && (state.arranging || !hidden(kind, id)) && !leftOut(kind, it)) out.push(it);
     });
     return out;
   }
+  /*
+   * The Recommended row shows the cards of the app in focus on the Apps row,
+   * or every app's while that app has none (an input, LG Home). Leaving the
+   * Apps row keeps the app it was last on, so Down reaches its cards.
+   */
+  var recApp = null;
+  function recCards() {
+    var all = [];
+    (data.order.rec || []).forEach(function (id) { var it = byId('rec', id); if (it) all.push(it); });
+    if (!recApp) return all;
+    return all.filter(function (it) { return it.app === recApp; });
+  }
+  function hasCards(app) {
+    for (var i = 0; i < (data.recommended || []).length; i++) if (data.recommended[i].app === app) return true;
+    return false;
+  }
+  function followApps() {
+    if (state.arranging || state.bar >= 0 || state.rail || rowKey() !== 'app') return;
+    var it = items('app')[colOf('app')];
+    var app = it && hasCards(it.id) ? it.id : null;
+    if (app === recApp) return;
+    recApp = app;
+    renderRec();
+  }
+  // Only the Recommended row is redrawn, from its first card, leaving the Apps row moving under the pointer alone.
+  function renderRec() {
+    var rowEl = rowElOf('rec'), track = rowEl && rowEl.querySelector('.track');
+    if (!track) return;
+    var list = items('rec'), tiles = '', note = esc(rowNote('rec', list));
+    list.forEach(function (it, i) { tiles += TILE.rec(it, i); });
+    rowEl.querySelector('h2').innerHTML = esc(ROW_TITLES.rec) + (note ? '<span>' + note + '</span>' : '') +
+      '<em class="sort">' + esc(sortLabel('rec')) + '</em>';
+    track.innerHTML = tiles;
+    state.col.rec = 0;
+    var tr = trackOf('rec');
+    tr.x = tr.target = tr.v = tr.gv = 0;
+    measure('rec');
+    paint('rec');
+    edges();
+    // The next full render builds the rows again with this app's cards.
+    renderedRows = '';
+  }
+
   // An input with nothing plugged in, where the layout leaves those out, as well
   // as any hidden. While arranging it shows, greyed out, so that it can still be moved.
   function leftOut(kind, it) { return kind === 'dev' && it.unused && layout.hideUnused === true && !state.arranging; }
@@ -522,7 +565,9 @@ html.faded #stage{opacity:0}
     }
     if (kind === 'rec') {
       if (layout.recommended !== true) return t('home.row.recOff', 'Switch on in Glasshouse’s Home settings');
-      return list.length ? '' : t('home.row.recArrange', 'Your apps’ picks, in the Apps row’s order');
+      if (!list.length) return t('home.row.recArrange', 'Your apps’ picks, in the Apps row’s order');
+      var from = recApp && find(data.apps, recApp);
+      return from ? t('home.row.recFrom', 'From {app}', { app: from.title }) : '';
     }
     if (data.sources.channels === 0) return t('home.row.noTuner', 'This TV has no channels tuned');
     if (!list.length) return t('home.row.addChannels', 'Add channels in Glasshouse\u2019s Home settings');
@@ -636,6 +681,7 @@ html.faded #stage{opacity:0}
     }
     for (var b = 0; b < BAR.length; b++) $(BAR[b]).className = 'btn' + (state.bar === b ? ' focus' : '');
     $('rail').className = state.rail && !finder.open ? 'focus' : '';
+    followApps();
     if (state.bar < 0) {
       var focused = items(rowKey())[colOf(rowKey())];
       state.last = focused ? { kind: rowKey(), id: focused.id } : null;

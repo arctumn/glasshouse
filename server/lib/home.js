@@ -43,8 +43,8 @@ var LG_HOME = takeover.LG_HOME;
 var LIVE_TV = 'com.webos.app.livetv';
 var SETTINGS = 'com.webos.service.settings/';
 
-// rec, the apps' recommendations, follows the Apps row and is not arranged tile by tile.
-var ROWS = ['app', 'dev', 'ch', 'rec'];
+// rec, the apps' recommendations, sits under the Apps row it follows and is not arranged tile by tile.
+var ROWS = ['app', 'rec', 'dev', 'ch'];
 // How a row is ordered: as arranged ('custom'), or the tile opened last first ('recent').
 var SORTS = ['custom', 'recent'];
 var SHOW_KEYS = ['showLastOn', 'showAppCount', 'showCec'];
@@ -278,7 +278,11 @@ function normalise(raw) {
   var d = defaults();
   if (!raw || typeof raw !== 'object') return d;
   var rows = stringList(raw.rows).filter(function (r) { return ROWS.indexOf(r) !== -1; });
-  ROWS.forEach(function (r) { if (rows.indexOf(r) === -1) rows.push(r); });
+  ROWS.forEach(function (r) {
+    if (rows.indexOf(r) !== -1) return;
+    // A layout saved before the Recommended row gets it under Apps, whose cards it shows.
+    rows.splice(r === 'rec' ? rows.indexOf('app') + 1 : rows.length, 0, r);
+  });
   d.rows = rows;
   ROWS.forEach(function (r) {
     if (raw.order && typeof raw.order === 'object') d.order[r] = stringList(raw.order[r]);

@@ -339,9 +339,15 @@ step('the LG Home tile cannot be hidden, and unknown rows are dropped', function
   start(null);
   home.setLayout({ hidden: { app: ['lg-home', 'netflix'] }, rows: ['ch', 'bogus'] }, function (r) {
     assert.deepEqual(r.layout.hidden.app, ['netflix']);
-    assert.deepEqual(r.layout.rows, ['ch', 'app', 'dev', 'rec']);
+    assert.deepEqual(r.layout.rows, ['ch', 'app', 'rec', 'dev']);
     done();
   });
+});
+
+step('a layout saved before the Recommended row gets it under Apps', function (done) {
+  start({ rows: ['dev', 'app', 'ch'] });
+  assert.deepEqual(home.layout().rows, ['dev', 'app', 'rec', 'ch']);
+  done();
 });
 
 var clock = 0;
