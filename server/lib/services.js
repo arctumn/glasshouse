@@ -243,8 +243,11 @@ function syncBootScript(disabledList) {
   lines.push(') </dev/null >/dev/null 2>&1 &');
   lines.push('');
 
+  var text = lines.join('\n');
   try {
-    fs.writeFileSync(initScriptPath, lines.join('\n'), { mode: 493 }); // 0755
+    // Written only where it differs: this runs at every server start.
+    if (fs.existsSync(initScriptPath) && fs.readFileSync(initScriptPath, 'utf8') === text) return;
+    fs.writeFileSync(initScriptPath, text, { mode: 493 }); // 0755
   } catch (e) {}
 }
 
@@ -268,6 +271,10 @@ function init(options) {
   if (options && options.stateDir) {
     stateDir = options.stateDir;
     disabledFilePath = path.join(stateDir, 'disabled_services.json');
+  }
+  if (options && options.initDir) {
+    initScriptPath = path.join(options.initDir, path.basename(initScriptPath));
+    oldInitScriptPath = path.join(options.initDir, path.basename(oldInitScriptPath));
   }
 
   var disabled = readDisabledList();
