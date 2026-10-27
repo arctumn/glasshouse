@@ -133,7 +133,8 @@ body{font-family:'Manrope',sans-serif;color:#ece7df;-webkit-font-smoothing:antia
 .ch .next{font-size:17px;color:#6b665e;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* The apps' recommendations: each app's own picture, 16:9 */
-.rec{width:240px;padding:10px}
+/* border-box: the 240px picture and 10px each side, so the focus outline frames all of it */
+.rec{width:260px;padding:10px}
 .rec .pic{display:block;width:240px;height:135px;border-radius:4px;background:#2a2825 center/cover no-repeat}
 .rec .nm{font-size:20px;font-weight:600;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rec .cat{font-size:17px;color:#6b665e;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
