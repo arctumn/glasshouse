@@ -205,9 +205,15 @@ function syncBootScript(disabledList) {
     return;
   }
 
+  /*
+   * In the background: run-parts runs the hooks one at a time, and
+   * daemon-reload alone took 7 s on a 50QNED87T6B (webOS 10.2.2), all of it
+   * before 50-tvweb could put Glasshouse Home in place.
+   */
   var lines = [
     '#!/bin/sh',
     '# tvweb managed disabled services',
+    '(',
     'if which systemctl >/dev/null 2>&1; then',
     '  mkdir -p /run/systemd/transient'
   ];
@@ -234,6 +240,7 @@ function syncBootScript(disabledList) {
     }
   }
   lines.push('fi');
+  lines.push(') </dev/null >/dev/null 2>&1 &');
   lines.push('');
 
   try {
@@ -270,11 +277,10 @@ function init(options) {
     writeDisabledList(disabled);
   }
   try {
-    if (fs.existsSync(oldInitScriptPath)) {
-      fs.unlinkSync(oldInitScriptPath);
-      syncBootScript(disabled);
-    }
+    if (fs.existsSync(oldInitScriptPath)) fs.unlinkSync(oldInitScriptPath);
   } catch (e) {}
+  // Written again at each start, so a hook from an earlier release takes this one's form.
+  syncBootScript(disabled);
 
   var systemctl = getSystemctl();
 
