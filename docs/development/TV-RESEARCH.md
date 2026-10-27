@@ -1648,3 +1648,36 @@ item with `position: absolute` children and no in-flow height collapses to 0 px.
 CSS transitions and transforms similarly require `-webkit-transition`,
 `-webkit-transform`, and `element.style.webkitTransform` in script (#746).
 
+`height: 100%` on that flex item does not rescue it. Chromium 53 (webOS 4, a
+B8 and a C9) and WebKit 538.2 (the 55UH600V on 0.122.1) both count it as no
+height, so the TV app's row list collapsed to 0 px: on webOS 4 nothing showed
+in 0.121.0 and 0.122.0, and on webOS 2 only the right-hand explainer. The list
+now has no height of its own and is stretched to its row, and the page sets
+it in pixels where an engine still leaves it at 0.
+
+On the B8 the TV app's page, kept in memory, went on showing the old layout
+after the server was updated, until the TV restarted: it came back without the
+`webOSRelaunch` event that reloads it. The page now also reloads when
+`/api/caps` reports a server version other than the one it loaded with.
+
+
+## Installing Glasshouse's own package (G3, webOS 9.2.2)
+
+- `appInstallService/dev/install` with `ipkUrl` set to a local `.ipk` of
+  `io.github.rorygallagher2024.lg-webos-dashboard` replaced the app in about
+  1.5 s, with the server, run from `/var/lib/tvweb`, left running. The package
+  has no services, so nothing lost root.
+- The app was open at the time and the install closed it; the TV went back to
+  Home.
+- Network-input key codes (`networkinput/test/sendKeyCode`) did not reach the
+  Glasshouse app's page; key events written to the remote's input device
+  (`LGE RCU`) did.
+
+## Glasshouse Home's first load after a cold start (C2, webOS 9.2.2)
+
+Opened as the boot hook opens it, 30 s after a reboot, Glasshouse Home's page
+waited for the server, which answered at 41 s, and the view's first heartbeat
+came at 50 s: about 9 s from the server answering to the view drawn. The
+first Home press after a reboot took up to 13 s on a CX (webOS 5.6.2), so a
+fixed wait from the server's start is too short for slower TVs; the page's
+own requests to the server show it is running.
