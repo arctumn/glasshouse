@@ -7,7 +7,7 @@
 
 ## What is on screen
 
-Glasshouse Home displays a clock and date (following the TV's 12-hour or 24-hour time setting), the last active source or app, and up to three rows (any row with no visible items is automatically hidden):
+Glasshouse Home displays a clock and date (following the TV's 12-hour or 24-hour time setting), the last active source or app, and up to four rows (any row with no visible items is automatically hidden):
 
 <div class="grid cards" markdown>
 
@@ -34,6 +34,12 @@ Glasshouse Home displays a clock and date (following the TV's 12-hour or 24-hour
     ---
 
     Favourite live TV channels added from the dashboard or TV app, showing the current broadcast programme from the TV guide when available.
+
+-   **Recommended**
+
+    ---
+
+    The titles the TV's apps put on LG's Home, such as Netflix's *Continue watching*, Prime Video's picks, Disney+, HBO Max and YouTube, as a row of cards with each app's picture, title and category. **OK** opens the app at that title. Cards follow the Apps row's order, an app hidden there shows none, and the row is moved like the others but its cards are not arranged one by one. **Off by default**: switch it on in the Recommended row's settings on the dashboard or in the TV app. The pictures are loaded from each app's own servers, as on LG's Home; nothing else is sent.
 
 -   **Recent apps (`Back` button)**
 
