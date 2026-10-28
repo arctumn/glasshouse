@@ -47,7 +47,7 @@ var SETTINGS = 'com.webos.service.settings/';
 var ROWS = ['app', 'rec', 'dev', 'ch'];
 // How a row is ordered: as arranged ('custom'), or the tile opened last first ('recent').
 var SORTS = ['custom', 'recent'];
-var SHOW_KEYS = ['showLastOn', 'showAppCount', 'showCec'];
+var SHOW_KEYS = ['showClock', 'showLastOn', 'showAppCount', 'showCec'];
 // An input opened from its tile is recorded as that device, not as the whole input.
 var TILE_OPEN_MS = 15000;
 /*
@@ -184,6 +184,8 @@ var wasEnabled = false;
 // LG's Home is in its place, opened by one of the ways back to it.
 var escaped = false;
 var foreground = '';
+// When something other than the view last came to the front, for the open watch.
+var otherOpenedAt = 0;
 var lastSource = null;
 var beatTimer = null;
 var lastBeatAt = 0;
@@ -258,12 +260,19 @@ function defaults() {
     // The plate describing the picture of what was last on: detail many
     // won't want on a home screen, so it waits to be switched on.
     picture: false,
-    // What the view shows beyond the rows: the last source in the top strip
-    // and on its input's tile, the "n of total" beside Apps, and each CEC
-    // device's address. On unless switched off, as before they could be.
+    // What the view shows beyond the rows: the clock and date, the last
+    // source in the top strip and on its input's tile, the "n of total"
+    // beside Apps, and each CEC device's address. On unless switched off, as
+    // before they could be.
+    showClock: true,
     showLastOn: true,
     showAppCount: true,
     showCec: true,
+    // The rows centred below the top strip, or along the bottom as on LG's Home.
+    rowsBottom: false,
+    // standard, or alternative: a smaller clock on the right, and the rows
+    // as rounded, translucent tiles without their titles.
+    view: 'standard',
     // Search on the view (lib/home-search): off by default, so nothing typed reaches LG unless switched on.
     search: false,
     // The Recommended row (lib/home-recommended): off by default, as its
@@ -327,6 +336,8 @@ function normalise(raw) {
   d.searchHintSeen = raw.searchHintSeen === true;
   d.picture = raw.picture === true;
   SHOW_KEYS.forEach(function (k) { d[k] = raw[k] !== false; });
+  d.rowsBottom = raw.rowsBottom === true;
+  d.view = raw.view === 'alternative' ? 'alternative' : 'standard';
   d.search = raw.search === true;
   d.recommended = raw.recommended === true;
   // Its cards come and go with the apps' lists, so it keeps no order of its own.
@@ -452,6 +463,9 @@ function setLayout(body, cb) {
     hintSeen: body.hintSeen !== undefined ? body.hintSeen : c.hintSeen,
     searchHintSeen: body.searchHintSeen !== undefined ? body.searchHintSeen : c.searchHintSeen,
     picture: typeof body.picture === 'boolean' ? body.picture : c.picture,
+    showClock: typeof body.showClock === 'boolean' ? body.showClock : c.showClock,
+    rowsBottom: typeof body.rowsBottom === 'boolean' ? body.rowsBottom : c.rowsBottom,
+    view: body.view !== undefined ? body.view : c.view,
     showLastOn: typeof body.showLastOn === 'boolean' ? body.showLastOn : c.showLastOn,
     showAppCount: typeof body.showAppCount === 'boolean' ? body.showAppCount : c.showAppCount,
     showCec: typeof body.showCec === 'boolean' ? body.showCec : c.showCec,
@@ -484,7 +498,7 @@ function setLayout(body, cb) {
 function layoutOf(c) {
   return { rows: c.rows, order: c.order, sort: c.sort, hidden: c.hidden, folder: c.folder, channels: c.channels, hintSeen: c.hintSeen,
     searchHintSeen: c.searchHintSeen, picture: c.picture, search: c.search, recommended: c.recommended,
-    fade: c.fade, hideUnused: c.hideUnused,
+    fade: c.fade, hideUnused: c.hideUnused, showClock: c.showClock, rowsBottom: c.rowsBottom, view: c.view,
     showLastOn: c.showLastOn, showAppCount: c.showAppCount, showCec: c.showCec, colours: c.colours,
     // Not saved: { host, by } while the ad blocker blocks LG's search (lib/home-search).
     searchBlocked: search.blocked() };
@@ -867,6 +881,8 @@ function open(body, cb) {
   var kind = body && body.kind;
   var id = body && typeof body.id === 'string' ? body.id : '';
   console.log('home: open ' + kind + ' ' + id);
+  // Only the view opens tiles: asked to, it is up, whether or not it beat first.
+  beats++;
   if (kind === 'lg' || (kind === 'app' && id === LG_HOME_TILE)) {
     if (body.recovery && !viewInFront()) return cb({ ok: true, done: false });
     return toLgHome('tile', cb);
@@ -1469,6 +1485,7 @@ function beat() {
 function foregroundChanged(id) {
   var was = foreground;
   foreground = id;
+  if (id && id !== LG_HOME && id !== was) otherOpenedAt = nowMs();
   if (wakeRequest && id && id !== was) {
     if (!wakeRequest.input && isInputApp(id)) wakeRequest.input = id;
     else if (wakeRequest.input !== id) cancelWake();
@@ -1523,7 +1540,10 @@ function homeKey(down) {
 /*
  * After a short Home press the view beats at once, opened or relaunched. sam
  * is no witness: with WebAppMgr stopped it kept naming the view in front
- * though nothing was drawn (a G4, webOS 11.2.0).
+ * though nothing was drawn (a G4, webOS 11.2.0). Something else opened since
+ * ends the watch: on a C2 (webOS 9.2.2) the view opened an input 2 s after a
+ * press, and hidden before its next 5 s beat, sent none, so LG's Home opened
+ * over the input 18 s later.
  */
 function watchOpen(retried, ms) {
   stopOpenWatch();
@@ -1532,6 +1552,7 @@ function watchOpen(retried, ms) {
     openTimer = setTimeout(function () {
       openTimer = null;
       if (beats > beatsBefore || escaped || !powerActive || !readConfig().enabled) return;
+      if (otherOpenedAt > since && foreground !== LG_HOME) return;
       var left = slowOpenMs - (nowMs() - since);
       if (!retried && left > 0 && webAppMgrRunning() !== false) return check(left);
       recoverView('Glasshouse Home did not open', retried);
@@ -1935,8 +1956,8 @@ module.exports = {
     if (!sup.ok) return cb({ ok: false, error: sup.reason });
     if (body && body.removeUploads === true) return wallpapers.removeUploads(cb);
     if (body && typeof body.remove === 'string') return wallpapers.removeUploads(cb, body.remove);
-    if (body && body.examples === true) return wallpapers.addExamples(cb);
-    cb({ ok: false, error: 'removeUploads, remove or examples expected' });
+    if (body && typeof body.choose === 'string') return wallpapers.choose(body.choose, cb);
+    cb({ ok: false, error: 'removeUploads, remove or choose expected' });
   },
   normalise: normalise,
   hideApps: hideApps,
