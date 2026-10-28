@@ -351,8 +351,10 @@ function renderHomeRows() {
 function homeRecRow(usable) {
   const on = homeLayout.recommended === true;
   const n = homeCat && homeCat.sources ? homeCat.sources.recommended : false;
+  const shown = (homeCat.order.rec || []).length;
   const count = !on ? '' : n === null ? t('home.recUnavailable', 'This TV did not list any recommendations.')
-    : t('home.recCount', '{n} on Glasshouse Home now', { n: (homeCat.order.rec || []).length });
+    : !shown ? t('home.recNone', 'None of this TV\u2019s apps list any yet.')
+    : t('home.recCount', '{n} on Glasshouse Home now', { n: shown });
   return `<div class="prot-row">
     <div class="prot-main"><div class="prot-title">${esc(t('home.recommended', 'Show the apps’ recommendations'))}</div>
       <div class="prot-desc">${esc(t('home.recommendedDesc', 'The titles Netflix, Prime Video, Disney+, HBO Max, YouTube and other apps put on LG’s Home, such as Continue watching, as a row of cards. OK opens the app at the title. An app hidden from the Apps row shows none.'))}</div>

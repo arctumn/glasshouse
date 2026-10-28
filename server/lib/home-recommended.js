@@ -24,7 +24,8 @@ var msg = require('./say').msg;
 var SERVICE = 'com.webos.service.applicationmanager/getAllContents';
 var MAX_PER_APP = 12;
 var MAX_TEXT = 200;
-var IMAGE_RE = /^https?:\/\/[^\s"'<>]+$/i;
+// No quote, bracket or backslash: the view puts the address in a CSS url('…').
+var IMAGE_RE = /^https?:\/\/[^\s"'<>\\]+$/i;
 
 var lunaFn = null;
 
