@@ -10871,6 +10871,10 @@
     "text": "OK tenta novamente. Se outra pessoa estiver a usar esta conta, ela pode permitir apenas uma emissão.",
     "from": "OK tries again. If someone else is watching on this account, it may allow only one stream."
   },
+  "home.tv.tryAgainPlain": {
+    "text": "OK tenta novamente.",
+    "from": "OK tries again."
+  },
   "home.tv.ungrouped": {
     "text": "Canais",
     "from": "Channels"
