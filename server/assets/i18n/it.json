@@ -10871,6 +10871,10 @@
     "text": "OK riprova. Se qualcun altro sta guardando con questo account, potrebbe essere consentito un solo flusso.",
     "from": "OK tries again. If someone else is watching on this account, it may allow only one stream."
   },
+  "home.tv.tryAgainPlain": {
+    "text": "OK riprova.",
+    "from": "OK tries again."
+  },
   "home.tv.ungrouped": {
     "text": "Canali",
     "from": "Channels"

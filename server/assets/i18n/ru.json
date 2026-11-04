@@ -10871,6 +10871,10 @@
     "text": "OK повторяет попытку. Если кто-то ещё смотрит с этой учётной записью, она может разрешать только один поток.",
     "from": "OK tries again. If someone else is watching on this account, it may allow only one stream."
   },
+  "home.tv.tryAgainPlain": {
+    "text": "OK повторяет попытку.",
+    "from": "OK tries again."
+  },
   "home.tv.ungrouped": {
     "text": "Каналы",
     "from": "Channels"

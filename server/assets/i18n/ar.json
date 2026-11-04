@@ -10871,6 +10871,10 @@
     "text": "اضغط OK للمحاولة مجدداً. إذا كان شخص آخر يشاهد بهذا الحساب، فقد يسمح الحساب ببث واحد فقط.",
     "from": "OK tries again. If someone else is watching on this account, it may allow only one stream."
   },
+  "home.tv.tryAgainPlain": {
+    "text": "اضغط OK للمحاولة مجدداً.",
+    "from": "OK tries again."
+  },
   "home.tv.ungrouped": {
     "text": "القنوات",
     "from": "Channels"

@@ -10871,6 +10871,10 @@
     "text": "Az OK újrapróbálja. Ha más is nézi ezt a fiókot, előfordulhat, hogy csak egy adatfolyam engedélyezett.",
     "from": "OK tries again. If someone else is watching on this account, it may allow only one stream."
   },
+  "home.tv.tryAgainPlain": {
+    "text": "Az OK újrapróbálja.",
+    "from": "OK tries again."
+  },
   "home.tv.ungrouped": {
     "text": "Csatornák",
     "from": "Channels"
